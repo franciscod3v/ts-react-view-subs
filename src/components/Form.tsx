@@ -1,9 +1,7 @@
-import { useState } from "react"
 import { Sub } from "../types"
+import { useNewSubForm } from "../hooks/useNewSubForm"
 
-interface FormState {
-    inputValues: Sub
-}
+
 
 interface FormProps {
     onNewSub: (newSub:Sub) => void
@@ -11,23 +9,27 @@ interface FormProps {
 
 export const Form = ({ onNewSub }: FormProps) => {
 
-    const [inputValues, setInputValues] = useState<FormState['inputValues']>({
-        nick: '',
-        subMonths: 0,
-        avatar: '',
-        description: ''
-    })
+    const [inputValues, dispatch] = useNewSubForm()
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
         onNewSub(inputValues)
-        event.preventDefault()  
+        handleClear()
     }
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setInputValues({
-            ...inputValues,
-            [event.target.name]: event.target.value
+        const {name, value} = event.target
+        dispatch({
+            type: "change-value",
+            payload: {
+                inputName: name,
+                inputValue: value
+            }
         })
+    }
+
+    const handleClear = () => {
+        dispatch({type: "clear"})
     }
 
     return (
@@ -37,7 +39,8 @@ export const Form = ({ onNewSub }: FormProps) => {
                 <input onChange={handleChange} type="text" name='subMonths' placeholder='subMonths' value={inputValues.subMonths} />
                 <input onChange={handleChange} type="text" name='avatar' placeholder='avatar' value={inputValues.avatar} />
                 <textarea onChange={handleChange} name='description' placeholder='description' value={inputValues.description} />
-                <button>Save a new sub</button>
+                <button onClick={handleClear}>Clear the form</button>
+                <button type="submit">Save a new sub</button>
             </form>
         </div>
     )
